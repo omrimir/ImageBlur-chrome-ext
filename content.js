@@ -77,23 +77,36 @@ function initialLoadRevealAll() {
     const images = document.querySelectorAll('img');
     for (const image of images) {
         if (image.dataset.imageProcessedOnLoad != "true" && image.id != window.cloneImageId) {
-            show(image);
-            image.dataset.imageProcessedOnLoad = true;
+            if (image.complete) {
+                show(image);
+                image.dataset.imageProcessedOnLoad = true;
+            } else {
+                image.onload = function() {
+                    show(image);
+                    image.dataset.imageProcessedOnLoad = true;
+                }
+            }
         }
     }
     window.imageBlurState = "revealed";
 }
 
+
 function onPageLoad(e) {
-    chrome.storage.sync.get(['blurOnDefault', 'blurAmount'], function (values) {
+    chrome.storage.sync.get(['blurOnDefault', 'blurAmount', 'dogsOnDefault'], function (values) {
+		console.log(values);
         window.imageBlurOpacityAmount = values.blurAmount || 6;
         if (values.blurOnDefault) {
             initialBlurAll();
         } else {
-            initialLoadRevealAll();
+            //initialLoadRevealAll();
+        }
+        if (values.dogsOnDefault) {
+            replaceImagesWithDogs();
         }
     });
 }
+
 
 function repositionMask(e) {
     const img = e.target;
@@ -161,22 +174,29 @@ document.addEventListener('keyup', function(e) {
 
 
 chrome.storage.onChanged.addListener(function(changes, namespace) {
-    for (key in changes) {
+    for (let key in changes) {  // Added let keyword here
         if (key === "blurAmount") {
             window.imageBlurOpacityAmount = changes[key].newValue;
         }
     }
 });
 
+
 function processImage(img) {
     observer.observe(img);
-    if (shouldUnblur) {
-        show(img);
-    }
-    if (isDogMode) {
-        replaceImageWithDog(img);
-    }
+    chrome.storage.sync.get(['blurOnDefault', 'dogsOnDefault'], function(values) {
+        if (values.blurOnDefault) {
+            blur(img);
+        }
+        if (values.dogsOnDefault) {
+            replaceImageWithDog(img);
+        }
+        if (shouldUnblur) {
+            show(img);
+        }
+    });
 }
+
 
 
 function replaceImageWithDog(image) {
@@ -235,7 +255,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 break;
             case 'replaceWithDogs':
                 if (isDogMode) {
-                    revertToOriginalImages();
+                    revertToOriginalImages(); 
                 }
                 isDogMode = true;
                 replaceImagesWithDogs();
@@ -269,23 +289,19 @@ function initializeObservers() {
     };
 
     observer = new IntersectionObserver(entries => {
-        // The callback for the intersection observer
-        // Process each observed entry
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                processImage(entry.target);
+				processImage(entry.target);
             } else {
-                // Code for when the element is outside the viewport
+				processImage(entry.target);
             }
         });
     }, observerOptions);
 
-    // Start observing all images on the page
 	document.querySelectorAll('*').forEach(node => {
 		observer.observe(node);
 	});
 
-    // Options for the mutation observer
     const mutationObserverOptions = {
         childList: true,
         subtree: true
@@ -309,12 +325,17 @@ function initializeObservers() {
         });
     });
 
-    // Start observing the body for changes
     bodyObserver.observe(document.body, mutationObserverOptions);
 }
 
-document.addEventListener('DOMContentLoaded', function(e) {
+//document.addEventListener('DOMContentLoaded', function(e) {
+//    onPageLoad(e);
+//    addMaskDivToPage(); // Make sure the mask div is added when the document is loaded
+//    initializeObservers();
+//});
+
+window.onload = function(e) {
     onPageLoad(e);
     addMaskDivToPage(); // Make sure the mask div is added when the document is loaded
     initializeObservers();
-});
+};

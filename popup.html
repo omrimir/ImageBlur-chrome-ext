@@ -16,24 +16,22 @@
   <body>
     <h1>Image Filters</h1>
     <label>Blur by default: <input id="defaultBlur" type="checkbox" /></label>
-	<label>Dogify by default: <input id="dogsByDefault" type="checkbox" /></label>
+	<label>Dogify by default: <input id="defaultDogs" type="checkbox" /></label>
     <br>
     <br>
 
     <button id="blur">Blur!</button>
     <button id="unblur">Unblur</button>
     <button id="revertDogs">Dog's collection</button>
-	<script src="popup.js"></script>
      
     <br>
     <br>
     
     <label>Blur Level (<span id="blurAmountText">6</span>)</label>
     <input id="blurAmount" type="range" min="1" max="10" value="6">
-
+	<script src="popup.js"></script>
     <br>
     <br>
-
     <p><small>Hold [Alt] to unblur</small></p>
   </body>
 </html>

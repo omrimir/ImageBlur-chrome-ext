@@ -1,2 +1,1 @@
-ImageBlur+:
-Enhance your web browsing experience with ImageBlur+. This Chrome extension allows users to interactively blur images on web pages. With just a press of the 'Alt' key, users can quickly toggle between blurring and revealing all images. Furthermore, for a touch of whimsy, images can be replaced with random dog photos. Whether you're looking to avoid potential spoilers, reduce distractions, or just have a little fun, ImageBlur+ is the perfect tool to customize your visual web experience.
+concert-chrome-ext
